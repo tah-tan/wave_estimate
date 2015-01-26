@@ -49,9 +49,11 @@ def get_m(Phi_, t_, S_, beta_, M_):
     m_tmp = np.dot(beta_, m_tmp2)
     # When this m_tmp is set to m and calculate inner product, error occurs.
     # So, make another array and set each member on it.
+    print(m_tmp)
     m_ = np.zeros(M_)
     for i in range(0, M_):
-        m_[i] = m_tmp[0,i]
+        m_[i] = m_tmp[0,i].real
+        # I don't know this should be real part or the norm of the number.
     return m_
 
 
@@ -118,7 +120,6 @@ def estimate_param(x_, t_, M_):
         if (alpha_dif < epsilon) and (beta_dif < epsilon):
             S = get_S(alpha, beta, Phi_T_Phi, M_)
             m_ = get_m(Phi, t_, S, beta, M_)
-            print("loop count: " + str(loop_count))
             break
 
     log_evi1 = M_ * np.log(alpha) / 2
@@ -151,10 +152,17 @@ def main():
     x = get_horizontal_val()
     t = get_observed_val(x)
     
-    M = 4           # order parameter (actual order is M-1)
-    m, log_evi = estimate_param(x, t, M)
-    print("m = " + str(m) + " , log_evi = " + str(log_evi))
-    
+    log_evi = -1000.0
+    m = []
+    M = 0
+    for M_ in range(2, 20):
+        m_, log_evi_ = estimate_param(x, t, M_)
+        if (log_evi_ > log_evi):
+            M = M_
+            log_evi = log_evi_
+            m = m_
+
+    print(M, log_evi, m)
     y = get_estimated_val(x, m, M)
     display_result(x, t, y)
 
